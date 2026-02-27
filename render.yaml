@@ -1,0 +1,79 @@
+# ===========================================
+# Hospital Management System
+# Render Deployment Configuration
+# ===========================================
+
+services:
+  # Backend API Service
+  - type: web
+    name: hms-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    region: singapore
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DATABASE_URL
+        sync: false  # Set in Render dashboard
+      - key: DB_USERNAME
+        sync: false  # Set in Render dashboard
+      - key: DB_PASSWORD
+        sync: false  # Set in Render dashboard
+      - key: JWT_SECRET
+        sync: false  # Set in Render dashboard
+      - key: ENCRYPTION_KEY
+        sync: false  # Set in Render dashboard
+      - key: FRONTEND_URL
+        sync: false  # Set in Render dashboard
+      - key: APP_BASE_URL
+        sync: false  # Set in Render dashboard
+      - key: VITE_API_URL
+        sync: false  # Set in Render dashboard
+      - key: HOSPITAL_NAME
+        value: Hi-Tech Computer Hospital
+      - key: HOSPITAL_CODE
+        value: A287
+      - key: HOSPITAL_SHORT_NAME
+        value: HTC
+      - key: RESEND_API_KEY
+        sync: false  # Set in Render dashboard
+      - key: RESEND_FROM_EMAIL
+        value: noreply@hospital.com
+      - key: EMAIL_PREFER_RESEND
+        value: "true"
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false  # Set in Render dashboard
+      - key: MAIL_PASSWORD
+        sync: false  # Set in Render dashboard
+      - key: SMS_PROVIDER
+        value: fast2sms
+      - key: FAST2SMS_API_KEY
+        sync: false  # Set in Render dashboard
+      - key: JAVA_OPTS
+        value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthCheckPath: /actuator/health
+
+  # Frontend Web Service
+  - type: web
+    name: hms-frontend
+    runtime: docker
+    dockerfilePath: ./web-client/Dockerfile
+    dockerContext: ./web-client
+    plan: starter
+    region: singapore
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: VITE_API_URL
+        sync: false  # Set to backend service URL in Render dashboard
+      - key: VITE_APP_NAME
+        value: Hospital Management System
+    healthCheckPath: /health

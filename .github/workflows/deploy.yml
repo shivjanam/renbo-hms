@@ -1,0 +1,133 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+env:
+  DOCKER_REGISTRY: docker.io
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'production' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/hms-backend:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/hms-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web-client
+          file: ./web-client/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/hms-frontend:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/hms-frontend:latest
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            VITE_APP_NAME=Hospital Management System
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          port: ${{ secrets.PRODUCTION_PORT || 22 }}
+          script: |
+            set -e
+            echo "🚀 Starting deployment..."
+            
+            # Navigate to project directory
+            cd /opt/hospital-management-system || {
+              echo "❌ Project directory not found"
+              exit 1
+            }
+            
+            # Pull latest code
+            echo "📥 Pulling latest code..."
+            git fetch origin
+            git reset --hard origin/main
+            
+            # Pull latest images
+            echo "🐳 Pulling latest Docker images..."
+            docker-compose pull
+            
+            # Backup database
+            echo "💾 Creating database backup..."
+            docker-compose exec -T db pg_dump -U ${{ secrets.DB_USERNAME }} hms_db > backup_$(date +%Y%m%d_%H%M%S).sql || true
+            
+            # Stop services gracefully
+            echo "⏸️  Stopping services..."
+            docker-compose down
+            
+            # Start services
+            echo "▶️  Starting services..."
+            docker-compose up -d
+            
+            # Wait for services to be healthy
+            echo "⏳ Waiting for services to be healthy..."
+            sleep 30
+            
+            # Health check
+            echo "🏥 Performing health check..."
+            if curl -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
+              echo "✅ Backend is healthy"
+            else
+              echo "❌ Backend health check failed"
+              docker-compose logs backend
+              exit 1
+            fi
+            
+            if curl -f http://localhost/health > /dev/null 2>&1; then
+              echo "✅ Frontend is healthy"
+            else
+              echo "❌ Frontend health check failed"
+              docker-compose logs frontend
+              exit 1
+            fi
+            
+            # Cleanup old images
+            echo "🧹 Cleaning up old Docker images..."
+            docker system prune -af --volumes --filter "until=168h" || true
+            
+            echo "✅ Deployment completed successfully!"

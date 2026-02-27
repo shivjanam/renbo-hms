@@ -1,0 +1,103 @@
+# ===========================================
+# Hospital Management System
+# Docker Compose with External Database (Neon PostgreSQL)
+# ===========================================
+# Use this when you want to use Neon PostgreSQL instead of local Docker database
+# Usage: docker-compose -f docker-compose.external-db.yml up -d
+
+version: '3.8'
+
+services:
+  # Redis for Caching & Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: hms-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hms-network
+
+  # Backend API (using external Neon database)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hms-backend
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      # Use external Neon database from .env
+      DATABASE_URL: ${DATABASE_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      FRONTEND_URL: ${FRONTEND_URL}
+      APP_BASE_URL: ${APP_BASE_URL}
+      # Hospital Config
+      HOSPITAL_NAME: ${HOSPITAL_NAME}
+      HOSPITAL_CODE: ${HOSPITAL_CODE}
+      # Payment Config
+      HOSPITAL_UPI_ID: ${HOSPITAL_UPI_ID:-}
+      HOSPITAL_UPI_NAME: ${HOSPITAL_UPI_NAME:-}
+      # Email API
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-noreply@hospital.com}
+      EMAIL_PREFER_RESEND: ${EMAIL_PREFER_RESEND:-true}
+      # SMS Config
+      FAST2SMS_API_KEY: ${FAST2SMS_API_KEY}
+      # SMTP Fallback
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - uploads:/app/uploads
+      - logs:/app/logs
+    networks:
+      - hms-network
+
+  # Frontend (Nginx serving built React app)
+  frontend:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_APP_NAME: ${VITE_APP_NAME:-Hospital Management System}
+    container_name: hms-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - hms-network
+
+volumes:
+  redis_data:
+  uploads:
+  logs:
+
+networks:
+  hms-network:
+    driver: bridge

@@ -1,0 +1,117 @@
+# ===========================================
+# Hospital Management System
+# Docker Compose for Production Deployment
+# ===========================================
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: hms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hms_db
+      POSTGRES_USER: ${DB_USERNAME:-hms_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hms_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-hms_user} -d hms_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hms-network
+
+  # Redis for Caching & Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: hms-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hms-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hms-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://db:5432/hms_db
+      DB_USERNAME: ${DB_USERNAME:-hms_user}
+      DB_PASSWORD: ${DB_PASSWORD:-hms_password}
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production-minimum-256-bits}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-this-32-char-key-prod}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      # Hospital Config
+      HOSPITAL_NAME: ${HOSPITAL_NAME:-City General Hospital}
+      HOSPITAL_CODE: ${HOSPITAL_CODE:-CGH001}
+      # Payment Config
+      HOSPITAL_UPI_ID: ${HOSPITAL_UPI_ID:-}
+      HOSPITAL_UPI_NAME: ${HOSPITAL_UPI_NAME:-}
+      # Email API
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-noreply@hospital.com}
+      EMAIL_PREFER_RESEND: ${EMAIL_PREFER_RESEND:-true}
+      # SMS Config
+      FAST2SMS_API_KEY: ${FAST2SMS_API_KEY:-}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - uploads:/app/uploads
+      - logs:/app/logs
+    networks:
+      - hms-network
+
+  # Frontend (Nginx serving built React app)
+  frontend:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        VITE_APP_NAME: ${VITE_APP_NAME:-Hospital Management System}
+    container_name: hms-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - hms-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
+  logs:
+
+networks:
+  hms-network:
+    driver: bridge

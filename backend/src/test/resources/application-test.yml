@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:hms_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: false
+
+  h2:
+    console:
+      enabled: false
+
+app:
+  jwt:
+    secret: dGVzdGluZ2p3dHNlY3JldGtleWZvcnRlc3RpbmdwdXJwb3Nlc29ubHl0aGlzc2hvdWxkYmVsb25nZW5vdWdo
+    expiration: 3600000
+    refresh-expiration: 86400000
+
+  encryption:
+    secret-key: TestEncryptionKeyForTesting12345
+
+  otp:
+    expiry-minutes: 5
+    cooldown-seconds: 30
+    max-daily-limit: 100
+    length: 6
+
+logging:
+  level:
+    root: WARN
+    com.hospital.hms: DEBUG
+    org.springframework.security: DEBUG

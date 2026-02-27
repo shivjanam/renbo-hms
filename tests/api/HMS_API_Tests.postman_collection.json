@@ -1,0 +1,1113 @@
+{
+  "info": {
+    "name": "HMS API Tests",
+    "description": "Comprehensive API Test Suite for Hospital Management System\n\nCovers:\n- Authentication (OTP, Password, Token Refresh)\n- Patient Management\n- Appointment Booking\n- Doctor APIs\n- Lab Management\n- Pharmacy\n- Billing & Payments\n- Admin Functions",
+    "_postman_id": "hms-api-tests-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080", "type": "string"},
+    {"key": "accessToken", "value": "", "type": "string"},
+    {"key": "refreshToken", "value": "", "type": "string"},
+    {"key": "hospitalId", "value": "1", "type": "string"},
+    {"key": "testMobile", "value": "9876543210", "type": "string"},
+    {"key": "patientId", "value": "", "type": "string"},
+    {"key": "appointmentId", "value": "", "type": "string"},
+    {"key": "doctorId", "value": "1", "type": "string"}
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Authentication and Authorization tests",
+      "item": [
+        {
+          "name": "Send OTP - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is successful', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 300ms', function() {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(300);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"mobileNumber\": \"{{testMobile}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/otp/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "otp", "send"]
+            }
+          }
+        },
+        {
+          "name": "Send OTP - Invalid Mobile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response indicates failure', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"mobileNumber\": \"12345\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/otp/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "otp", "send"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP - Invalid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 or 404', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"mobileNumber\": \"{{testMobile}}\",\n    \"otp\": \"000000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/otp/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "otp", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Password Login - Invalid Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401 or 404', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 404]);",
+                  "});",
+                  "",
+                  "pm.test('Response indicates failure', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"wronguser\",\n    \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token - Invalid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"invalid_token\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patient Management",
+      "description": "Patient CRUD operations",
+      "item": [
+        {
+          "name": "Create Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Patient has UHID', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.uhid).to.exist;",
+                  "    pm.collectionVariables.set('patientId', jsonData.data.id);",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 500ms', function() {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"firstName\": \"Ramesh\",\n    \"lastName\": \"Sharma\",\n    \"dateOfBirth\": \"1980-05-15\",\n    \"gender\": \"MALE\",\n    \"bloodGroup\": \"B_POSITIVE\",\n    \"mobileNumber\": \"9876543210\",\n    \"email\": \"ramesh.sharma@test.com\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients"]
+            }
+          }
+        },
+        {
+          "name": "Get Patient by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Patient data is returned', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.id).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{patientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "{{patientId}}"]
+            }
+          }
+        },
+        {
+          "name": "Search Patients",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns paginated results', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.content).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/search?query=Sharma&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "search"],
+              "query": [
+                {"key": "query", "value": "Sharma"},
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "description": "Appointment booking and management",
+      "item": [
+        {
+          "name": "Get Available Slots",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns slots array', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [{"key": "X-Hospital-Id", "value": "{{hospitalId}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/appointments/slots?doctorId={{doctorId}}&date=2026-02-03",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "appointments", "slots"],
+              "query": [
+                {"key": "doctorId", "value": "{{doctorId}}"},
+                {"key": "date", "value": "2026-02-03"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Book Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Appointment number is generated', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.appointmentNumber).to.exist;",
+                  "    pm.collectionVariables.set('appointmentId', jsonData.data.id);",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 500ms', function() {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"patientId\": \"{{patientId}}\",\n    \"doctorId\": \"{{doctorId}}\",\n    \"appointmentDate\": \"2026-02-03\",\n    \"slotStartTime\": \"10:00\",\n    \"appointmentType\": \"OPD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "appointments"]
+            }
+          }
+        },
+        {
+          "name": "Double Booking Prevention",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 or 409', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);",
+                  "});",
+                  "",
+                  "pm.test('Error message indicates slot unavailable', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message.toLowerCase()).to.include('slot');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"patientId\": \"{{patientId}}\",\n    \"doctorId\": \"{{doctorId}}\",\n    \"appointmentDate\": \"2026-02-03\",\n    \"slotStartTime\": \"10:00\",\n    \"appointmentType\": \"OPD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "appointments"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Appointment status is cancelled', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.status).to.equal('CANCELLED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reason\": \"Patient requested cancellation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/appointments/{{appointmentId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "appointments", "{{appointmentId}}", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "description": "Payment and billing tests",
+      "item": [
+        {
+          "name": "Initiate UPI Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Payment order is created', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.orderId).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"},
+              {"key": "X-Idempotency-Key", "value": "{{$guid}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"appointmentId\": \"{{appointmentId}}\",\n    \"amount\": 500.00,\n    \"paymentMode\": \"UPI\",\n    \"upiId\": \"patient@upi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/payments/initiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "payments", "initiate"]
+            }
+          }
+        },
+        {
+          "name": "Duplicate Payment Prevention",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Duplicate is rejected or returns same order', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 409]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"},
+              {"key": "X-Idempotency-Key", "value": "fixed-idempotency-key-123"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"appointmentId\": \"{{appointmentId}}\",\n    \"amount\": 500.00,\n    \"paymentMode\": \"UPI\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/payments/initiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "payments", "initiate"]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Invoice has GST details', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.cgst).to.exist;",
+                  "    pm.expect(jsonData.data.sgst).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/invoices/{{invoiceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "invoices", "{{invoiceId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lab Module",
+      "description": "Lab test orders and reports",
+      "item": [
+        {
+          "name": "Create Lab Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Lab order number is generated', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.orderNumber).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"patientId\": \"{{patientId}}\",\n    \"doctorId\": \"{{doctorId}}\",\n    \"tests\": [\n        {\"testId\": 1, \"testCode\": \"LAB001\"},\n        {\"testId\": 10, \"testCode\": \"LAB010\"}\n    ],\n    \"priority\": \"ROUTINE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/lab/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "lab", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Upload Report - Invalid Format",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error indicates invalid format', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message.toLowerCase()).to.include('format');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [{"key": "X-Hospital-Id", "value": "{{hospitalId}}"}],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "file", "type": "file", "src": "invalid.exe"},
+                {"key": "orderId", "type": "text", "value": "1"}
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/lab/reports/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "lab", "reports", "upload"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pharmacy",
+      "description": "Medicine and stock management",
+      "item": [
+        {
+          "name": "Search Medicines",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns medicines array', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [{"key": "X-Hospital-Id", "value": "{{hospitalId}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pharmacy/medicines?query=paracetamol",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pharmacy", "medicines"],
+              "query": [{"key": "query", "value": "paracetamol"}]
+            }
+          }
+        },
+        {
+          "name": "Dispense Medicine - Out of Stock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error indicates out of stock', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message.toLowerCase()).to.include('stock');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"medicineId\": 999,\n    \"quantity\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pharmacy/dispense",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pharmacy", "dispense"]
+            }
+          }
+        },
+        {
+          "name": "Dispense Expired Medicine",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error indicates expired', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message.toLowerCase()).to.include('expir');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"medicineId\": 1,\n    \"batchNumber\": \"EXPIRED_BATCH\",\n    \"quantity\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pharmacy/dispense",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pharmacy", "dispense"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Hospital administration",
+      "item": [
+        {
+          "name": "Create Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"Staff\",\n    \"email\": \"test.staff@hospital.com\",\n    \"mobileNumber\": \"9876543299\",\n    \"role\": \"NURSE\",\n    \"departmentId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/staff",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "staff"]
+            }
+          }
+        },
+        {
+          "name": "Create Duplicate Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 409', function() {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('Error indicates duplicate', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message.toLowerCase()).to.include('exist');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Hospital-Id", "value": "{{hospitalId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"Staff\",\n    \"email\": \"test.staff@hospital.com\",\n    \"mobileNumber\": \"9876543299\",\n    \"role\": \"NURSE\",\n    \"departmentId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/staff",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "staff"]
+            }
+          }
+        },
+        {
+          "name": "Dashboard Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 500ms', function() {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [{"key": "X-Hospital-Id", "value": "{{hospitalId}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "description": "Report generation and downloads",
+      "item": [
+        {
+          "name": "Generate Revenue Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Report data is returned', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [{"key": "X-Hospital-Id", "value": "{{hospitalId}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/revenue?startDate=2026-01-01&endDate=2026-02-28",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "revenue"],
+              "query": [
+                {"key": "startDate", "value": "2026-01-01"},
+                {"key": "endDate", "value": "2026-02-28"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download PDF Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is PDF', function() {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('pdf');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [{"key": "X-Hospital-Id", "value": "{{hospitalId}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/revenue/pdf?startDate=2026-01-01&endDate=2026-02-28",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "revenue", "pdf"],
+              "query": [
+                {"key": "startDate", "value": "2026-01-01"},
+                {"key": "endDate", "value": "2026-02-28"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Empty Report Handling",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Empty data is handled gracefully', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+            },
+            "method": "GET",
+            "header": [{"key": "X-Hospital-Id", "value": "{{hospitalId}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/revenue?startDate=2020-01-01&endDate=2020-01-02",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "revenue"],
+              "query": [
+                {"key": "startDate", "value": "2020-01-01"},
+                {"key": "endDate", "value": "2020-01-02"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "description": "Application health and monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Application is UP', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.equal('UP');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
