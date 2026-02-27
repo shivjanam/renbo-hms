@@ -26,14 +26,14 @@ ENCRYPTION_KEY=HTC2024EncryptionKey32CharLong!
 ```env
 FRONTEND_URL=https://renbo-hms.vercel.app
 APP_BASE_URL=https://renbo-hms.vercel.app
-VITE_API_URL=https://hms-backend-xxxx.onrender.com
+VITE_API_URL=https://renbo-hms.onrender.com
 VITE_APP_NAME=Hospital Management System
 ```
 
-**⚠️ Important:** 
-- `FRONTEND_URL` → https://renbo-hms.vercel.app ✅ (Deployed)
-- `APP_BASE_URL` → https://renbo-hms.vercel.app ✅ (Deployed)
-- `VITE_API_URL` → Your Render backend URL (Update after backend deploys)
+**✅ Deployed URLs:**
+- `FRONTEND_URL` → https://renbo-hms.vercel.app ✅
+- `APP_BASE_URL` → https://renbo-hms.vercel.app ✅
+- `VITE_API_URL` → https://renbo-hms.onrender.com ✅
 
 ### Hospital Configuration
 
@@ -200,7 +200,7 @@ JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC
 ### For Frontend (Vercel)
 
 ```env
-VITE_API_URL=https://hms-backend-xxxx.onrender.com
+VITE_API_URL=https://renbo-hms.onrender.com
 VITE_APP_NAME=Hospital Management System
 ```
 

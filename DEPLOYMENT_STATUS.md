@@ -7,9 +7,9 @@
 - **Status**: Live and running
 - **Platform**: Vercel (Free Tier)
 
-### Backend (Render) - CONFIGURE NOW ⚠️
-- **URL**: `https://hms-backend-xxxx.onrender.com` (Update with your actual URL)
-- **Status**: Needs environment variables update
+### Backend (Render) - DEPLOYED ✅
+- **URL**: https://renbo-hms.onrender.com
+- **Status**: Live and running
 - **Platform**: Render (Free Tier)
 
 ---
@@ -24,10 +24,8 @@ Go to **Render Dashboard** → **Backend Service** → **Environment** tab:
 ```env
 FRONTEND_URL=https://renbo-hms.vercel.app
 APP_BASE_URL=https://renbo-hms.vercel.app
-VITE_API_URL=https://hms-backend-xxxx.onrender.com
+VITE_API_URL=https://renbo-hms.onrender.com
 ```
-
-**Replace `xxxx` with your actual Render backend service ID.**
 
 ### Step 2: Update Frontend Environment Variables (Vercel)
 
@@ -56,10 +54,10 @@ DB_PASSWORD=npg_hwjWHm01xMlr
 JWT_SECRET=YTJiM2M0ZDVlNmY3ZzhoOWkwajFrMmwzbTRuNW82cDdxOHI5czB0MXUydjN3NHg1eTZ6N2E4YjljMGQxZTJmM2c0aDVpNmo3
 ENCRYPTION_KEY=HTC2024EncryptionKey32CharLong!
 
-# URLs (UPDATED WITH YOUR FRONTEND URL)
+# URLs (UPDATED WITH YOUR ACTUAL URLs)
 FRONTEND_URL=https://renbo-hms.vercel.app
 APP_BASE_URL=https://renbo-hms.vercel.app
-VITE_API_URL=https://hms-backend-xxxx.onrender.com
+VITE_API_URL=https://renbo-hms.onrender.com
 
 # Hospital
 HOSPITAL_NAME=Renbow Hospital
@@ -112,11 +110,9 @@ OTP_MAX_DAILY_LIMIT=10
 Go to **Vercel** → **Project Settings** → **Environment Variables**:
 
 ```env
-VITE_API_URL=https://hms-backend-xxxx.onrender.com
+VITE_API_URL=https://renbo-hms.onrender.com
 VITE_APP_NAME=Hospital Management System
 ```
-
-**⚠️ Important:** Replace `xxxx` with your actual Render backend URL.
 
 ---
 
@@ -134,8 +130,8 @@ VITE_APP_NAME=Hospital Management System
 
 3. **Verify:**
    - Frontend: https://renbo-hms.vercel.app/
-   - Backend Health: `https://hms-backend-xxxx.onrender.com/actuator/health`
-   - API Docs: `https://hms-backend-xxxx.onrender.com/swagger-ui.html`
+   - Backend Health: https://renbo-hms.onrender.com/actuator/health
+   - API Docs: https://renbo-hms.onrender.com/swagger-ui.html
 
 ---
 
@@ -178,9 +174,9 @@ VITE_APP_NAME=Hospital Management System
 ## 📝 Notes
 
 - **Frontend URL**: https://renbo-hms.vercel.app/ ✅
-- **Backend URL**: Update once Render deployment completes
+- **Backend URL**: https://renbo-hms.onrender.com ✅
 - **Database**: Neon PostgreSQL (shared with CMS)
-- **Both services**: Free tier, no payment required
+- **Both services**: Free tier, no payment required ✅
 
 ---
 
