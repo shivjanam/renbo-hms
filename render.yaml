@@ -9,7 +9,7 @@ services:
     name: hms-backend
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    dockerContext: .  # Changed: Use root context instead of ./backend
     plan: free  # FREE TIER - spins down after 15 min inactivity
     region: singapore
     buildCommand: ""
@@ -66,7 +66,7 @@ services:
     name: hms-frontend
     runtime: docker
     dockerfilePath: ./web-client/Dockerfile
-    dockerContext: ./web-client
+    dockerContext: .  # Changed: Use root context instead of ./web-client
     plan: free  # FREE TIER - spins down after 15 min inactivity
     region: singapore
     buildCommand: ""
