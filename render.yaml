@@ -1,16 +1,16 @@
 # ===========================================
 # Hospital Management System
-# Render Deployment Configuration
+# Render Deployment Configuration (FREE TIER)
 # ===========================================
 
 services:
-  # Backend API Service
+  # Backend API Service (FREE TIER)
   - type: web
     name: hms-backend
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    plan: starter
+    plan: free  # FREE TIER - spins down after 15 min inactivity
     region: singapore
     buildCommand: ""
     startCommand: ""
@@ -61,13 +61,13 @@ services:
         value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthCheckPath: /actuator/health
 
-  # Frontend Web Service
+  # Frontend Web Service (FREE TIER)
   - type: web
     name: hms-frontend
     runtime: docker
     dockerfilePath: ./web-client/Dockerfile
     dockerContext: ./web-client
-    plan: starter
+    plan: free  # FREE TIER - spins down after 15 min inactivity
     region: singapore
     buildCommand: ""
     startCommand: ""
