@@ -10,6 +10,7 @@ public enum PaymentStatus {
     INITIATED("Initiated", "Payment has been initiated"),
     PROCESSING("Processing", "Payment is being processed"),
     SUCCESS("Success", "Payment successful"),
+    PARTIALLY_PAID("Partially Paid", "Partial payment received"),
     FAILED("Failed", "Payment failed"),
     CANCELLED("Cancelled", "Payment cancelled"),
     REFUND_INITIATED("Refund Initiated", "Refund has been initiated"),
