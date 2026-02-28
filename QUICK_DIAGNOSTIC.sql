@@ -40,30 +40,75 @@ WHERE table_name = 'doctors'
     column_name LIKE '%spec%'
   );
 
--- 7. List all HMS-related tables
-SELECT table_name 
+-- 7. List all HMS-related tables (Hospital Management System)
+SELECT table_name as hms_table
 FROM information_schema.tables 
 WHERE table_schema = 'public'
-  AND (
-    table_name IN ('patients', 'doctors', 'appointments', 'invoices',
-                   'prescriptions', 'hospitals', 'departments', 'users',
-                   'queue_entries', 'lab_tests', 'lab_orders', 'medicines',
-                   'medicine_stock', 'beds', 'admissions', 'notifications',
-                   'audit_logs', 'refresh_tokens')
-    OR table_name LIKE '%patient%'
-    OR table_name LIKE '%doctor%'
-    OR table_name LIKE '%appointment%'
+  AND table_name IN (
+    'admissions', 'appointments', 'attendance', 'attendance_summary',
+    'audit_logs', 'beds', 'branches', 'certificates', 'circulars',
+    'departments', 'doctor_hospitals', 'doctor_schedules', 
+    'doctor_specializations', 'doctors', 'examinations',
+    'hospitals', 'invoice_items', 'invoices', 'lab_order_items',
+    'lab_orders', 'lab_tests', 'medicine_stock', 'medicines',
+    'notifications', 'otp_verifications', 'patients', 
+    'payment_transactions', 'payments', 'prescription_medicines',
+    'prescriptions', 'queue_entries', 'refresh_tokens',
+    'system_config', 'user_hospital_access', 'user_roles', 'users'
   )
 ORDER BY table_name;
 
--- 8. Check CMS tables (if any)
-SELECT table_name 
+-- 8. List all CMS tables (College Management System)
+SELECT table_name as cms_table
 FROM information_schema.tables 
 WHERE table_schema = 'public'
-  AND (
-    table_name LIKE '%student%'
-    OR table_name LIKE '%course%'
-    OR table_name LIKE '%college%'
-    OR table_name LIKE '%faculty%'
+  AND table_name IN (
+    'courses', 'faculty', 'faculty_subject_allocations',
+    'fee_payments', 'fee_structures', 'parents',
+    'payment_fee_mappings', 'previous_educations',
+    'scholarships', 'semester_results', 'semesters',
+    'student_documents', 'student_fees', 'student_results',
+    'students', 'subjects', 'timetable'
   )
 ORDER BY table_name;
+
+-- 9. Count tables by system
+SELECT 
+    'HMS Tables' as system,
+    COUNT(*) as table_count
+FROM information_schema.tables 
+WHERE table_schema = 'public'
+  AND table_name IN (
+    'admissions', 'appointments', 'beds', 'departments', 
+    'doctor_hospitals', 'doctor_schedules', 'doctor_specializations',
+    'doctors', 'hospitals', 'invoice_items', 'invoices',
+    'lab_order_items', 'lab_orders', 'lab_tests', 'medicine_stock',
+    'medicines', 'patients', 'payment_transactions', 'payments',
+    'prescription_medicines', 'prescriptions', 'queue_entries'
+  )
+UNION ALL
+SELECT 
+    'CMS Tables' as system,
+    COUNT(*) as table_count
+FROM information_schema.tables 
+WHERE table_schema = 'public'
+  AND table_name IN (
+    'courses', 'faculty', 'faculty_subject_allocations',
+    'fee_payments', 'fee_structures', 'parents',
+    'payment_fee_mappings', 'previous_educations',
+    'scholarships', 'semester_results', 'semesters',
+    'student_documents', 'student_fees', 'student_results',
+    'students', 'subjects', 'timetable'
+  )
+UNION ALL
+SELECT 
+    'Shared Tables' as system,
+    COUNT(*) as table_count
+FROM information_schema.tables 
+WHERE table_schema = 'public'
+  AND table_name IN (
+    'users', 'audit_logs', 'notifications', 'refresh_tokens',
+    'system_config', 'otp_verifications', 'attendance',
+    'attendance_summary', 'branches', 'certificates', 'circulars',
+    'examinations', 'user_hospital_access', 'user_roles'
+  );
