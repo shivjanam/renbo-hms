@@ -2,7 +2,7 @@
 -- DROP CMS TABLES FROM HMS DATABASE BRANCH
 -- ============================================================
 -- ⚠️ Run this AFTER creating hms_db branch with "Schema only"
--- ⚠️ This removes CMS tables, leaving empty database for HMS
+-- ⚠️ This removes CMS tables, leaving HMS-required shared tables
 -- ⚠️ Backend will then create HMS tables automatically
 -- ============================================================
 
@@ -27,6 +27,27 @@ DROP TABLE IF EXISTS students CASCADE;
 DROP TABLE IF EXISTS subjects CASCADE;
 DROP TABLE IF EXISTS timetable CASCADE;
 
+-- Drop CMS-specific shared tables (HMS doesn't use these)
+DROP TABLE IF EXISTS otp_verifications CASCADE;
+DROP TABLE IF EXISTS system_config CASCADE;
+DROP TABLE IF EXISTS attendance CASCADE;
+DROP TABLE IF EXISTS attendance_summary CASCADE;
+DROP TABLE IF EXISTS branches CASCADE;
+DROP TABLE IF EXISTS certificates CASCADE;
+DROP TABLE IF EXISTS circulars CASCADE;
+DROP TABLE IF EXISTS examinations CASCADE;
+
+-- ============================================================
+-- KEEP these shared tables (HMS REQUIRES them):
+-- ============================================================
+-- users - HMS User entity for authentication
+-- user_roles - HMS User.roles collection table
+-- user_hospital_access - HMS User.accessibleHospitalIds collection table
+-- refresh_tokens - HMS RefreshToken entity
+-- notifications - HMS Notification entity
+-- audit_logs - HMS AuditLog entity
+-- ============================================================
+
 -- Verify CMS tables are dropped
 SELECT 
     'CMS Tables Remaining' as status,
@@ -44,13 +65,30 @@ WHERE table_schema = 'public'
 
 -- Should show: 0 CMS tables remaining
 
--- Show remaining tables (should be empty or only shared tables)
+-- Verify CMS-specific shared tables are dropped
 SELECT 
-    'Remaining Tables' as info,
+    'CMS Shared Tables Remaining' as status,
+    COUNT(*) as count
+FROM information_schema.tables 
+WHERE table_schema = 'public'
+  AND table_name IN (
+    'otp_verifications', 'system_config', 'attendance',
+    'attendance_summary', 'branches', 'certificates',
+    'circulars', 'examinations'
+  );
+-- Should show: 0 CMS shared tables remaining
+
+-- Show remaining tables (should show HMS-required shared tables)
+SELECT 
+    'Remaining Tables (HMS-Required Shared Tables)' as info,
     table_name 
 FROM information_schema.tables 
 WHERE table_schema = 'public' 
 ORDER BY table_name;
 
--- After this, database is empty and ready for HMS tables
--- Backend will create HMS tables automatically via Hibernate
+-- Expected remaining tables:
+-- users, user_roles, user_hospital_access, refresh_tokens, notifications, audit_logs
+-- (These are required by HMS and will be kept)
+
+-- After this, database has HMS-required shared tables
+-- Backend will create HMS-specific tables automatically via Hibernate
