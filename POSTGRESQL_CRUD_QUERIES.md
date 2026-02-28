@@ -60,6 +60,7 @@ SELECT
     email, date_of_birth, gender, blood_group, city, state,
     created_at, updated_at
 FROM patients
+WHERE is_deleted = false
 ORDER BY created_at DESC;
 
 -- Get patient by ID
@@ -91,17 +92,29 @@ ORDER BY count DESC;
 -- List all doctors
 SELECT 
     id, employee_id, first_name, last_name, display_name,
-    specialization, registration_number, mobile_number, email,
+    primary_specialization, registration_number, mobile_number, email,
     primary_hospital_id, primary_department_id,
     created_at, updated_at
 FROM doctors
+WHERE is_deleted = false
 ORDER BY display_name;
 
 -- Get doctor by ID
-SELECT * FROM doctors WHERE id = 1;
+SELECT * FROM doctors WHERE id = 1 AND is_deleted = false;
 
 -- Get doctors by specialization
-SELECT * FROM doctors WHERE specialization = 'CARDIOLOGY';
+SELECT * FROM doctors 
+WHERE primary_specialization = 'CARDIOLOGY' 
+  AND is_deleted = false;
+
+-- Get doctors with additional specializations
+SELECT 
+    d.*,
+    ds.specialization as additional_specialization
+FROM doctors d
+LEFT JOIN doctor_specializations ds ON d.id = ds.doctor_id
+WHERE d.is_deleted = false
+ORDER BY d.display_name;
 
 -- Get doctors by hospital
 SELECT d.*, h.name as hospital_name
@@ -110,9 +123,10 @@ LEFT JOIN hospitals h ON d.primary_hospital_id = h.id
 WHERE d.primary_hospital_id = 1;
 
 -- Count doctors by specialization
-SELECT specialization, COUNT(*) as count
+SELECT primary_specialization, COUNT(*) as count
 FROM doctors
-GROUP BY specialization
+WHERE is_deleted = false
+GROUP BY primary_specialization
 ORDER BY count DESC;
 ```
 
@@ -127,9 +141,10 @@ SELECT
     d.display_name as doctor_name,
     h.name as hospital_name
 FROM appointments a
-LEFT JOIN patients p ON a.patient_id = p.id
-LEFT JOIN doctors d ON a.doctor_id = d.id
-LEFT JOIN hospitals h ON a.hospital_id = h.id
+LEFT JOIN patients p ON a.patient_id = p.id AND p.is_deleted = false
+LEFT JOIN doctors d ON a.doctor_id = d.id AND d.is_deleted = false
+LEFT JOIN hospitals h ON a.hospital_id = h.id AND h.is_deleted = false
+WHERE a.is_deleted = false
 ORDER BY a.appointment_date DESC, a.appointment_time DESC;
 
 -- Get appointments by patient
