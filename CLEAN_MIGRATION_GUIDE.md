@@ -36,17 +36,38 @@
 
 ---
 
-### Step 2: Create New Neon Database for HMS
+### Step 2: Create New Neon Database Branch for HMS
 
 1. **Go to Neon Dashboard**: https://console.neon.tech
 2. **Select your project**
-3. **Click "Branches"** → **"Create Branch"** (or "Create Database")
-4. **Configure:**
-   - **Name**: `hms_db` (or `hospital_management_db`)
-   - **Parent Branch**: Select your main branch
-   - **Region**: Same as CMS (ap-southeast-1)
-5. **Click "Create"**
-6. **Copy connection string** - You'll need this!
+3. **Click "Branches"** in left sidebar
+4. **Click "Create Branch"** button
+5. **In the "Create new branch" dialog:**
+
+   **Parent branch:**
+   - Select your main branch (usually `production` or `main`)
+   
+   **Branch name:**
+   - Enter: `hms_db` (or `hospital_management_db`)
+   - This will be your new HMS database name
+   
+   **Automatically delete branch after:**
+   - ⚠️ **Leave unchecked** (for permanent database)
+   - Only check if you want a temporary branch
+   
+   **Data Inclusion Options:**
+   - ⭐ **IMPORTANT: Select "Schema only (Beta)"** 
+   - ✅ This creates a clean database with table structures but **no data**
+   - ✅ Perfect for initializing with HMS sample data via `DataInitializer`
+   - ✅ Shows remaining space (e.g., "536.87 MB remaining space")
+   
+   **DO NOT SELECT:**
+   - ❌ "Current data" - Would copy all CMS + HMS data (not what we want!)
+   - ❌ "Past data" - Would copy historical data
+   - ❌ "Anonymized data" - For testing with masked data
+   
+6. **Click "Create"** button (black button at bottom)
+7. **Copy connection string** - Neon will show it after creation
 
 **Example Connection String:**
 ```

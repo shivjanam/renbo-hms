@@ -8,18 +8,38 @@ Create a new Neon PostgreSQL database specifically for HMS, separate from CMS da
 
 ## 📋 Step-by-Step Instructions
 
-### Step 1: Create New Database in Neon
+### Step 1: Create New Database Branch in Neon
 
 1. **Go to**: https://console.neon.tech
 2. **Sign in** to your account
 3. **Select your project** (the one with your CMS database)
-4. **Click "Branches"** in left sidebar (or "Databases")
-5. **Click "Create Branch"** or **"Create Database"**
-6. **Configure:**
-   - **Name**: `hms_db` (or `hospital_management_db`)
-   - **Parent Branch**: Select your main branch
-   - **Region**: Same as CMS (ap-southeast-1)
-7. **Click "Create"**
+4. **Click "Branches"** in left sidebar
+5. **Click "Create Branch"** button
+6. **In the "Create new branch" dialog:**
+   
+   **Parent branch:**
+   - Select your main branch (usually `production` or `main`)
+   
+   **Branch name:**
+   - Enter: `hms_db` (or `hospital_management_db`)
+   - This will be your new HMS database name
+   
+   **Automatically delete branch after:**
+   - ⚠️ **Leave unchecked** (for permanent database)
+   - Only check if you want a temporary branch
+   
+   **Data Inclusion Options:**
+   - ⭐ **Select "Schema only (Beta)"** 
+   - This creates a clean database with table structures but **no data**
+   - Perfect for initializing with HMS sample data
+   - Shows remaining space: "536.87 MB remaining space"
+   
+   **Other options (DO NOT SELECT):**
+   - ❌ "Current data" - Would copy all CMS + HMS data
+   - ❌ "Past data" - Would copy historical data
+   - ❌ "Anonymized data" - For testing with masked data
+   
+7. **Click "Create"** button (black button at bottom)
 
 ### Step 2: Get Connection Details
 
