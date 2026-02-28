@@ -38,6 +38,8 @@
 
 ### Step 2: Create New Neon Database Branch for HMS
 
+**⚠️ IMPORTANT**: Since you've already dropped HMS tables, the parent branch only has CMS tables. We'll create a branch and then drop CMS tables to get an empty database.
+
 1. **Go to Neon Dashboard**: https://console.neon.tech
 2. **Select your project**
 3. **Click "Branches"** in left sidebar
@@ -53,21 +55,18 @@
    
    **Automatically delete branch after:**
    - ⚠️ **Leave unchecked** (for permanent database)
-   - Only check if you want a temporary branch
    
    **Data Inclusion Options:**
-   - ⭐ **IMPORTANT: Select "Schema only (Beta)"** 
-   - ✅ This creates a clean database with table structures but **no data**
-   - ✅ Perfect for initializing with HMS sample data via `DataInitializer`
-   - ✅ Shows remaining space (e.g., "536.87 MB remaining space")
+   - Select **"Schema only (Beta)"** 
+   - This will copy CMS table structures (no data)
+   - We'll drop CMS tables next to get empty database
    
-   **DO NOT SELECT:**
-   - ❌ "Current data" - Would copy all CMS + HMS data (not what we want!)
-   - ❌ "Past data" - Would copy historical data
-   - ❌ "Anonymized data" - For testing with masked data
-   
-6. **Click "Create"** button (black button at bottom)
-7. **Copy connection string** - Neon will show it after creation
+6. **Click "Create"** button
+7. **Switch to `hms_db` branch** in Neon Dashboard
+8. **Open SQL Editor** → Run `DROP_CMS_TABLES.sql`
+   - This removes CMS tables, leaving empty database
+   - Backend will create HMS tables automatically
+9. **Copy connection string** from `hms_db` branch
 
 **Example Connection String:**
 ```
