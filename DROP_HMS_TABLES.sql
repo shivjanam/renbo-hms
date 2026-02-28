@@ -5,14 +5,11 @@
 -- ⚠️ Only run this if you're sure you want to delete HMS tables
 -- ⚠️ CMS tables will remain untouched
 -- ============================================================
-
--- Disable foreign key checks temporarily (PostgreSQL)
-SET session_replication_role = 'replica';
-
--- Drop HMS tables in correct order (respecting foreign keys)
--- Start with tables that have foreign keys to other HMS tables
+-- Note: CASCADE automatically handles foreign key dependencies
+-- ============================================================
 
 -- Drop HMS-specific tables (in dependency order)
+-- CASCADE will automatically drop dependent objects (foreign keys, etc.)
 DROP TABLE IF EXISTS prescription_medicines CASCADE;
 DROP TABLE IF EXISTS prescriptions CASCADE;
 DROP TABLE IF EXISTS invoice_items CASCADE;
@@ -54,9 +51,6 @@ DROP TABLE IF EXISTS medicine_stock CASCADE;
 -- DROP TABLE IF EXISTS certificates CASCADE;
 -- DROP TABLE IF EXISTS circulars CASCADE;
 -- DROP TABLE IF EXISTS examinations CASCADE;
-
--- Re-enable foreign key checks
-SET session_replication_role = 'origin';
 
 -- Verify HMS tables are dropped
 SELECT 
